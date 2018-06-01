@@ -10,7 +10,6 @@ def write_command(serial, comm, verbose = False):
         print(comm)
 #   serial.write(comm.encode())
             
-    
 def read_buffer(serial):
     """ Reads the serial port bufer and decodes it """
     resp = serial.read_all()
@@ -43,25 +42,40 @@ def runcommands(cs, ts, ps, serials, verbose = False):
         print('Error: Lists are not equally long. ')
 
 
-cs = ["F", # PRE
-      "L", # CH
-      "F", # PRE
-      "L", # CH
-      ""]
+def load_csv(fname):
+    delimiter = ','
+    f = open(fname, 'r')
+    ts = []
+    cs = []
+    ps = []
+    for l in f.readlines():
+        values = l.strip("\n").split(delimiter)
+        ts.append(values[0])
+        cs.append(values[1])
+        ps.append(values[2])
+    return ts, cs, ps
+#cs = ["F", # PRE
+#      "L", # CH
+#      "F", # PRE
+#      "L", # CH
+#      ""]
+#
+#ts = [0.000,
+#      0.040,
+#      0.080,
+#      1.040,
+#      1.080]
+#
+#ps = ["COM1",
+#      "COM1",
+#      "COM1",
+#      "COM1",
+#      "COM1"]
 
-ts = [0.000,
-      0.040,
-      0.080,
-      1.040,
-      1.080]
+fname = 'test.csv'
+ts, cs, ps = load_csv(fname)
 
-ps = ["COM1",
-      "COM1",
-      "COM1",
-      "COM1",
-      "COM1"]
 baudrate = 38400
-
 
 ports = list(set(ps))
 serials = {} # serial connections
@@ -85,7 +99,7 @@ for r in range(reps):
 
 ps_reps = ps*reps
 
-runcommands(ser, cs_rep, ts_rep, ps_reps, verbose=True, serials)
+runcommands(ser, cs_rep, ts_rep, ps_reps, serial, verbose=True)
     
 time.sleep(0.5)
 ser.close()
