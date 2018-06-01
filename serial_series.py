@@ -52,29 +52,18 @@ def load_csv(fname):
         values = l.strip("\n").split(delimiter)
         ts.append(values[0])
         cs.append(values[1])
-        ps.append(values[2])
+        if len(values) >= 3: # there might not be a port defined
+            p = values[2]
+            if p != "": 
+                ps.append(p)
     return ts, cs, ps
-#cs = ["F", # PRE
-#      "L", # CH
-#      "F", # PRE
-#      "L", # CH
-#      ""]
-#
-#ts = [0.000,
-#      0.040,
-#      0.080,
-#      1.040,
-#      1.080]
-#
-#ps = ["COM1",
-#      "COM1",
-#      "COM1",
-#      "COM1",
-#      "COM1"]
 
 fname = 'test.csv'
 ts, cs, ps = load_csv(fname)
 
+if len(ps) == 1:
+    ps = ps*len(ts)
+    
 baudrate = 38400
 
 ports = list(set(ps))
