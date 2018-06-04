@@ -47,9 +47,8 @@ def runcommands(cs, ts, ps, serials, verbose = False, profiling = False):
         print('Error: Lists are not equally long. ')
 
 
-def load_csv(fname):
+def load_csv(f):
     delimiter = ','
-    f = open(fname, 'r')
     ts = []
     cs = []
     ps = []
@@ -66,38 +65,45 @@ def load_csv(fname):
             ps.append(p)
     return ts, cs, ps
 
+# Parameters
 fname = 'test.csv'
 reps = 2
 baudrate = 38400
 verbose = True
 profiling = True
 
-ts, cs, ps = load_csv(fname)
+try:
+    f = open(fname, 'r')
+    ts, cs, ps = load_csv(f)
 
-# Get list of unique portnames
-ports = list(set(ps))
+    # Get list of unique portnames
+    ports = list(set(ps))
 
-serials = {} # serial connections
-for port in ports:
-    ser = serial.Serial(port = port, 
-                        baudrate=baudrate,
-                        write_timeout=0,
-                        bytesize=serial.EIGHTBITS,
-                        stopbits=serial.STOPBITS_ONE,
-                        parity=serial.PARITY_NONE)
-    serials[port] = ser
+    serials = {} # serial connections
+    for port in ports:
+        ser = serial.Serial(port = port, 
+                            baudrate=baudrate,
+                            write_timeout=0,
+                            bytesize=serial.EIGHTBITS,
+                            stopbits=serial.STOPBITS_ONE,
+                            parity=serial.PARITY_NONE)
+        serials[port] = ser
     
 
-# Repeat all lists the specified number of times
-ts_rep = [] # offset each rep's times
-for r in range(reps):
-    for t in ts:
-        ts_rep.append(t + ts[-1]*r)
-cs_rep = cs*reps
-ps_reps = ps*reps
+    # Repeat all lists the specified number of times
+    ts_rep = [] # offset each rep's times
+    for r in range(reps):
+        for t in ts:
+            ts_rep.append(t + ts[-1]*r)
+    cs_rep = cs*reps
+    ps_reps = ps*reps
 
-runcommands(cs_rep, ts_rep, ps_reps, serials, verbose, profiling)
-    
-time.sleep(0.5)
-for ser in serials.values():
-    ser.close()
+    try:
+        runcommands(cs_rep, ts_rep, ps_reps, serials, verbose, profiling)
+    finally:
+        time.sleep(0.5)
+        for ser in serials.values():
+            ser.close()
+        print('ports closed')
+finally:
+    f.close()
