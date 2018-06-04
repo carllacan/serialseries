@@ -68,19 +68,19 @@ def load_csv(f):
 
 # Create argument parser
     
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(description='sends a series of commands over the serial port')
 parser.add_argument('filename',
                     type=str, help='CSV file with columns for time, commands and ports')
 parser.add_argument('-r', '--reps', required = False, default=1,
-                    type=int, help='Number of command sequence repetitions')
+                    type=int, help='Number of command sequence repetitions (default: %(default)s)')
 parser.add_argument('-bd', '--baudrate', required = False, default=38400,
-                    type=int, help='Baudrate.')
+                    type=int, help='Baudrate (default: %(default)s)')
 parser.add_argument('-v', '--verbose', required = False,
                     action='store_true',
-                    help='Print Commands as they are sent.')
+                    help='Print Commands as they are sent (default: %(default)s)')
 parser.add_argument('-p', '--profiling', required = False,
-                    action='store_false',
-                    help='Show profiling information.')
+                    action='store_true',
+                    help='Show profiling information if verbose (default: %(default)s).')
     
 # Get parameters
 args = parser.parse_args()
@@ -97,12 +97,12 @@ baudrate = args.baudrate
 verbose = args.verbose
 profiling = args.profiling
 
+# test.csv -r 2 -b 38400 -v -p
 #fname = 'test.csv'
 #reps = 2
 #baudrate = 38400
 #verbose = True
 #profiling = True
-
 try: 
     f = open(fname, 'r')
     ts, cs, ps = load_csv(f)
@@ -115,7 +115,7 @@ try:
     cs_rep = cs*reps
     ps_reps = ps*reps
     
-    # Open the serial port connections try to open and write everything
+    # Try to open the serial port connections and run the commands
 
     try:
     # Get list of unique portnames
