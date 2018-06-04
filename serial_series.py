@@ -2,6 +2,7 @@
 
 import serial
 import time
+import argparse
 
      
 def write_command(serial, comm, verbose = False, dt = None):
@@ -65,30 +66,46 @@ def load_csv(f):
             ps.append(p)
     return ts, cs, ps
 
-# Parameters
-fname = 'test.csv'
-reps = 2
-baudrate = 38400
-verbose = True
-profiling = True
+# Create argument parser
+    
+parser = argparse.ArgumentParser()
+parser.add_argument('filename',
+                    type=str, help='CSV file with columns for time, commands and ports')
+parser.add_argument('-r', '--reps', required = False, default=1,
+                    type=int, help='Number of command sequence repetitions')
+parser.add_argument('-bd', '--baudrate', required = False, default=38400,
+                    type=int, help='Baudrate.')
+parser.add_argument('-v', '--verbose', required = False,
+                    action='store_true',
+                    help='Print Commands as they are sent.')
+parser.add_argument('-p', '--profiling', required = False,
+                    action='store_false',
+                    help='Show profiling information.')
+    
+# Get parameters
+args = parser.parse_args()
+#print(args.filename)
+#print(args.reps)
+#print(args.baudrate)
+#print(args.verbose)
+#print(args.profiling)
 
-try:
+# Parameters
+fname = args.filename
+reps = args.reps
+baudrate = args.baudrate
+verbose = args.verbose
+profiling = args.profiling
+
+#fname = 'test.csv'
+#reps = 2
+#baudrate = 38400
+#verbose = True
+#profiling = True
+
+try: 
     f = open(fname, 'r')
     ts, cs, ps = load_csv(f)
-
-    # Get list of unique portnames
-    ports = list(set(ps))
-
-    serials = {} # serial connections
-    for port in ports:
-        ser = serial.Serial(port = port, 
-                            baudrate=baudrate,
-                            write_timeout=0,
-                            bytesize=serial.EIGHTBITS,
-                            stopbits=serial.STOPBITS_ONE,
-                            parity=serial.PARITY_NONE)
-        serials[port] = ser
-    
 
     # Repeat all lists the specified number of times
     ts_rep = [] # offset each rep's times
@@ -97,13 +114,25 @@ try:
             ts_rep.append(t + ts[-1]*r)
     cs_rep = cs*reps
     ps_reps = ps*reps
+    
+    # Open the serial port connections try to open and write everything
 
     try:
+    # Get list of unique portnames
+        ports = list(set(ps))
+        serials = {} # serial connections
+        for port in ports:
+            ser = serial.Serial(port = port, 
+                                baudrate=baudrate,
+                                write_timeout=0,
+                                bytesize=serial.EIGHTBITS,
+                                stopbits=serial.STOPBITS_ONE,
+                                parity=serial.PARITY_NONE)
+            serials[port] = ser
         runcommands(cs_rep, ts_rep, ps_reps, serials, verbose, profiling)
     finally:
         time.sleep(0.5)
         for ser in serials.values():
             ser.close()
-        print('ports closed')
 finally:
     f.close()
